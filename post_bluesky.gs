@@ -25,7 +25,8 @@ function postToBlueSky(text, userId, password, imageID=null, alt_text="投稿画
     collection: 'app.bsky.feed.post',
     record: {
       text: text,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      langs: ["ja"] // 投稿言語設定
     }
   };
   var postOptions = {
