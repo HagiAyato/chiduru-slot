@@ -4,33 +4,6 @@ function postToBlueSky(text, userId, password, imageID=null, alt_text="投稿画
   var postUrl = 'https://bsky.social/xrpc/com.atproto.repo.createRecord';
   var uploadBlobUrl = 'https://bsky.social/xrpc/com.atproto.repo.uploadBlob';
 
-  /**
-   * 指数バックオフ付きでUrlFetchAppを実行する内部ヘルパー
-   */
-  function fetchWithRetry(url, options) {
-    let lastError;
-    // 最大5回リトライ（待機時間: 1s, 2s, 4s, 8s, 16s）
-    for (let i = 0; i < 5; i++) {
-      try {
-        const response = UrlFetchApp.fetch(url, options);
-        const code = response.getResponseCode();
-        if (code >= 200 && code < 300) return response;
-      } catch (e) {
-        lastError = e;
-        // 502 (Bad Gateway), 503 (Service Unavailable), 504 (Gateway Timeout) 
-        // およびタイムアウトエラーの場合のみリトライを実行
-        if (e.message.includes("502") || e.message.includes("503") || e.message.includes("504") || e.message.includes("Timeout")) {
-          Logger.log((i + 1) + '回目リトライ実施: ' + e.message);
-          const sleepTime = Math.pow(2, i) * 1000;
-          Utilities.sleep(sleepTime);
-          continue;
-        }
-        throw e; // 400系エラー（認証失敗等）はリトライせずに例外を投げる
-      }
-    }
-    throw new Error("最大リトライ回数を超過しました: " + lastError.message);
-  }
-
   // ログインリクエストの作成
   var loginPayload = {
     identifier: userId,
